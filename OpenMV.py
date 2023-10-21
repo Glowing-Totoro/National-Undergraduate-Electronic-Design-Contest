@@ -1,10 +1,11 @@
 # red light find & send
+# send four corner x & y in while(1)
 def color_blob(threshold):
     blobs = img.find_blobs(threshold,x_stride=1, y_stride=1, area_threshold=0, pixels_threshold=0,merge=False,margin=1)
-    if len(blobs)>=1 :#有色块
+    if len(blobs)>=1 :# some block
         # Draw a rect around the blob.
         b = blobs[0]
-        #img.draw_rectangle(b[0:4]) # rect
+        # img.draw_rectangle(b[0:4]) # rect
         cx = b[5]
         cy = b[6]
         for i in range(len(blobs)-1):
@@ -16,13 +17,13 @@ def color_blob(threshold):
         #img.draw_cross(cx, cy) # cx, cy
         print(cx,cy)
         return int(cx), int(cy)
-    return -1, -1 #表示没有找到
+    return -1, -1 # not find
 
-# 基本库导入
+# some basic
 import sensor, image, time, math
 from pyb import UART
 
-# 串口初始化
+# UART
 uart = UART(3,115200,timeout_char = 1000)
 uart.init(115200,bits = 8,parity = None,stop = 1,timeout_char = 1000)
 u_start = bytearray([0xb3,0xb3])
@@ -30,11 +31,11 @@ u_over = bytearray([0x0d,0x0a])
 uart_buf = [0,0,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,0
             ]
-# 八位低位数据位 八位高位数据位 一位状态记录位
+# 8 low for data & 8 high for data & 1 for status
 
-# 基本变量定义
+# basic
 dymac = 0
-#threshold_red=[(60, 255, -20, 20, -20, 20)] #红色激光阈值
+#threshold_red=[(60, 255, -20, 20, -20, 20)] # threshold for red light
 #threshold_red = [(26, 100, 11, 127, -128, 127)]
 threshold_red = [(21, 100, 15, 127, -128, 127)]
 
@@ -43,7 +44,7 @@ findy = 0
 reset1 = 0
 
 # First Stage Black Rectangle
-# 死循环识别矩形框循环发送四周坐标
+
 while(True):
     # 发送外框坐标
     reset1 = 0
@@ -52,14 +53,7 @@ while(True):
     sensor.set_framesize(sensor.QQVGA)
     sensor.set_auto_gain(False)
     sensor.set_auto_whitebal(False)
-    # 大白天
-    #sensor.set_auto_exposure(False, 50000)#调节曝光度，调节完可以比较清晰地看清激光点
-    # 下午五点
-    #sensor.set_auto_exposure(False, 120000)
-    # 下午六点
-    #sensor.set_auto_exposure(False, 140000)
 
-    # 实验室
     sensor.set_auto_exposure(False, 500000)
 
     sensor.skip_frames(time = 300)
@@ -95,29 +89,20 @@ while(True):
                 uart_buf[i] = dymac
             #for i in range(16):
                 #print(uart_buf[i])
-            # openmv状态标志位
+            # openmv status
             uart_buf[16] = 1
             uart_buf = bytearray(uart_buf)
-            uart.write(u_start)	#先发帧头，再发数据，最后发帧尾
+            uart.write(u_start)	# head data end
             uart.write(uart_buf)
             uart.write(u_over)
         print("FPS %f" % clock.fps())
-    # 发送内框坐标
+    # send iner data
     #sensor.reset()
     #sensor.set_pixformat(sensor.RGB565)
     #sensor.set_framesize(sensor.QQVGA)
     #sensor.set_auto_gain(False)
     #sensor.set_auto_whitebal(False)
-    #sensor.set_auto_exposure(False, 10000)#调节曝光度，调节完可以比较清晰地看清激光点
-
-    # 大白天
-    #sensor.set_auto_exposure(False, 12000)
-    # 下午五点
-    #sensor.set_auto_exposure(False, 15000)
-    # 下午六点
-    #sensor.set_auto_exposure(False, 12000)
-
-    # 实验室
+    
     sensor.set_auto_exposure(False, 400000)
 
     sensor.skip_frames(time = 500)
@@ -159,25 +144,24 @@ while(True):
                 uart_buf[i] = dymac
             #for i in range(16):
                 #print(uart_buf[i])
-            # openmv状态标志位
+            # openmv status
             uart_buf[16] = 2
             uart_buf = bytearray(uart_buf)
-            uart.write(u_start)	#先发帧头，再发数据，最后发帧尾
+            uart.write(u_start)	 # head data end
             uart.write(uart_buf)
             uart.write(u_over)
         print("FPS %f" % clock.fps())
 
-    # 发送激光坐标
-    # 状态变换 Red Light Find And Send
+    # Red Light Find And Send
     uart_buf[16] = 0
     print("light")
     sensor.reset()
     sensor.set_pixformat(sensor.RGB565) # or sensor.RGB565
     sensor.set_framesize(sensor.QQVGA) # or sensor.QVGA (or others)
     sensor.skip_frames(time=900) # Let new settings take affect.
-    sensor.set_auto_exposure(False, 15000)#调节曝光度，调节完可以比较清晰地看清激光点
-    sensor.set_auto_whitebal(False) # 白平衡关闭
-    sensor.set_auto_gain(False) # 关闭增益（色块识别时必须要关）
+    sensor.set_auto_exposure(False, 15000)
+    sensor.set_auto_whitebal(False)
+    sensor.set_auto_gain(False)
     while(True):
         if reset1 == 1:
             break
@@ -202,7 +186,7 @@ while(True):
                 uart_buf[9] = 1
             uart_buf[16] = 3
             uart_buf = bytearray(uart_buf)
-            uart.write(u_start)	#先发帧头，再发数据，最后发帧尾
+            uart.write(u_start)
             uart.write(uart_buf)
             uart.write(u_over)
         print("FPS %f" % clock.fps())
