@@ -48,7 +48,6 @@ reset1 = 0
 # First Stage Black Rectangle
 
 while(True):
-    # 发送外框坐标
     reset1 = 0
     sensor.reset()
     sensor.set_pixformat(sensor.RGB565)
