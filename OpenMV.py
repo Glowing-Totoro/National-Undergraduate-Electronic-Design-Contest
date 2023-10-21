@@ -1,3 +1,5 @@
+# Code for OPENMV
+
 # red light find & send
 # send four corner x & y in while(1)
 def color_blob(threshold):
